@@ -1,14 +1,14 @@
 FROM python:3.10-slim
 
-# Instala Tesseract + dados de idioma + Poppler
+# instala tesseract + idioma pt + poppler
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-         tesseract-ocr \
-         tesseract-ocr-por \
-         poppler-utils \
+        tesseract-ocr \
+        tesseract-ocr-por \
+        poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Defina onde o Tesseract encontra os arquivos .traineddata
+# garante que o Tesseract ache os dados de idioma
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 
 WORKDIR /app
@@ -16,8 +16,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
-EXPOSE 10000
-CMD ["streamlit", "run", "app.py", \
-     "--server.port", "10000", \
-     "--server.address", "0.0.0.0", \
-     "--server.headless", "true"]
+# expõe a porta dinâmica
+EXPOSE $PORT
+
+# usa o PORT que o Vercel configura
+CMD ["bash", "-lc", "streamlit run app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true"]
